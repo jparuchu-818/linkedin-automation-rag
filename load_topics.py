@@ -12,15 +12,17 @@ initial_topics = [
     "Hidden gems from the 90s",
     "Movies with open endings",
     "Movies based on true stories",
-    "Best animated movies for adults"
+    "Best animated movies for adults",
 ]
 
 for topic in initial_topics:
-    topics.insert_one({
-        "topic": topic,
-        "status": "pending",
-        "created_at": datetime.utcnow(),
-        "processed_at": None
-    })
+    topics.insert_one(
+        {
+            "topic": topic,
+            "status": "pending",
+            "created_at": datetime.utcnow(),
+            "processed_at": None,
+        }
+    )
 
 print(f"[INFO] Inserted {len(initial_topics)} topics.")

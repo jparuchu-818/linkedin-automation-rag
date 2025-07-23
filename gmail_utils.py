@@ -14,15 +14,17 @@ from googleapiclient.discovery import build, Resource
 from googleapiclient.errors import HttpError
 
 # Gmail API scope for sending emails
-SCOPES = ['https://www.googleapis.com/auth/gmail.send']
+SCOPES = ["https://www.googleapis.com/auth/gmail.send"]
+
 
 def load_credentials():
     """Load credentials from token.json if they exist and are valid."""
-    if os.path.exists('token.json'):
-        credents = Credentials.from_authorized_user_file('token.json', SCOPES)
+    if os.path.exists("token.json"):
+        credents = Credentials.from_authorized_user_file("token.json", SCOPES)
         if credents and credents.valid:
             return credents
     return None
+
 
 def refresh_credentials(credents):
     """Attempt to refresh expired credentials."""
@@ -33,11 +35,13 @@ def refresh_credentials(credents):
         print(f"[AUTH] Failed to refresh token: {e}")
         return None
 
+
 def create_new_credentials():
     """Run OAuth flow to get new credentials."""
-    flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
+    flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
     credents = flow.run_local_server(port=0)
     return credents
+
 
 def gmail_authenticate():
     """
@@ -52,18 +56,21 @@ def gmail_authenticate():
     if not credents or not credents.valid:
         credents = create_new_credentials()
 
-    with open('token.json', 'w') as token_file:
+    with open("token.json", "w") as token_file:
         token_file.write(credents.to_json())
 
-    return build('gmail', 'v1', credentials=credents)
+    return build("gmail", "v1", credentials=credents)
 
-def _create_message_with_link(to: str, subject: str, post_text: str, image_path: str, approval_link: str) -> Dict[str, str]:
+
+def _create_message_with_link(
+    to: str, subject: str, post_text: str, image_path: str, approval_link: str
+) -> Dict[str, str]:
     """
     Creates a MIME message with an HTML body containing a clickable approval link.
     """
-    msg = MIMEMultipart('related') # 'related' is best for emails with embedded content
-    msg['To'] = to
-    msg['Subject'] = subject
+    msg = MIMEMultipart("related")  # 'related' is best for emails with embedded content
+    msg["To"] = to
+    msg["Subject"] = subject
 
     # --- Create the HTML part of the email ---
     # This HTML includes a styled button for the approval link
@@ -91,23 +98,34 @@ def _create_message_with_link(to: str, subject: str, post_text: str, image_path:
     </body>
     </html>
     """
-    msg.attach(MIMEText(html_body, 'html'))
+    msg.attach(MIMEText(html_body, "html"))
 
     if image_path and os.path.exists(image_path):
-        with open(image_path, 'rb') as f:
+        with open(image_path, "rb") as f:
             img = MIMEImage(f.read())
-        img.add_header('Content-Disposition', 'attachment', filename=os.path.basename(image_path))
+        img.add_header(
+            "Content-Disposition", "attachment", filename=os.path.basename(image_path)
+        )
         msg.attach(img)
         print(f"[EMAIL] Attached image: {os.path.basename(image_path)}")
 
     raw_message = base64.urlsafe_b64encode(msg.as_bytes()).decode()
-    return {'raw': raw_message}
+    return {"raw": raw_message}
+
 
 # In gmail_utils.py
 
 # ... (all imports and the gmail_authenticate function remain the same)
 
-def send_approval_email(to: str, subject: str, post_text: str, image_path: str, approve_link: str, reject_link: str):
+
+def send_approval_email(
+    to: str,
+    subject: str,
+    post_text: str,
+    image_path: str,
+    approve_link: str,
+    reject_link: str,
+):
     """
     Main function to send an approval email containing clickable Approve/Reject buttons.
     """
@@ -143,24 +161,28 @@ def send_approval_email(to: str, subject: str, post_text: str, image_path: str, 
     </body>
     </html>
     """
-    
+
     # Create the main email container
-    msg = MIMEMultipart('related')
-    msg['To'] = to
-    msg['Subject'] = subject
-    msg.attach(MIMEText(html_body, 'html'))
+    msg = MIMEMultipart("related")
+    msg["To"] = to
+    msg["Subject"] = subject
+    msg.attach(MIMEText(html_body, "html"))
 
     # Attach the image
     if image_path and os.path.exists(image_path):
-        with open(image_path, 'rb') as f:
+        with open(image_path, "rb") as f:
             img = MIMEImage(f.read())
-        img.add_header('Content-Disposition', 'attachment', filename=os.path.basename(image_path))
+        img.add_header(
+            "Content-Disposition", "attachment", filename=os.path.basename(image_path)
+        )
         msg.attach(img)
 
     # Encode and send
     raw_message = base64.urlsafe_b64encode(msg.as_bytes()).decode()
     try:
-        service.users().messages().send(userId='me', body={'raw': raw_message}).execute()
+        service.users().messages().send(
+            userId="me", body={"raw": raw_message}
+        ).execute()
         print(f"[EMAIL SUCCESS] Approval email sent to {to}.")
     except Exception as e:
         print(f"[EMAIL API ERROR] {e}")

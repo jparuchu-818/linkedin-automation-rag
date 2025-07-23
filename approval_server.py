@@ -12,6 +12,7 @@ from db_mongo import update_post_status, mark_topic_as_processed
 # --- Create the FastAPI app ---
 app = FastAPI()
 
+
 # --- HTML Templates for Responses (no changes here) ---
 def create_html_response(message: str, color: str) -> str:
     # ... (this function remains the same)
@@ -20,6 +21,7 @@ def create_html_response(message: str, color: str) -> str:
     <body><div class="container"><div class="status-icon status-approved">{'✅' if color == '#28a745' else '🗑️'}</div><div class="message">{message}</div></div></body></html>
     """
 
+
 # --- MODIFIED: Endpoints now accept a 'topic' query parameter ---
 @app.get("/approve/{post_id}", response_class=HTMLResponse)
 def approve_post(post_id: str, topic: str):
@@ -27,10 +29,18 @@ def approve_post(post_id: str, topic: str):
     print(f"[SERVER] Received APPROVAL for post {post_id} on topic '{topic}'")
     try:
         update_post_status(post_id, "approved")
-        mark_topic_as_processed(topic) # <-- NEW: Update the topic status
-        return create_html_response(f"Post for topic '{topic}' has been APPROVED.", "#28a745")
+        mark_topic_as_processed(topic)  # <-- NEW: Update the topic status
+        return create_html_response(
+            f"Post for topic '{topic}' has been APPROVED.", "#28a745"
+        )
     except Exception as e:
-        return HTMLResponse(content=create_html_response("An internal server error occurred.", "#dc3545"), status_code=500)
+        return HTMLResponse(
+            content=create_html_response(
+                "An internal server error occurred.", "#dc3545"
+            ),
+            status_code=500,
+        )
+
 
 @app.get("/reject/{post_id}", response_class=HTMLResponse)
 def reject_post(post_id: str, topic: str):
@@ -38,10 +48,18 @@ def reject_post(post_id: str, topic: str):
     print(f"[SERVER] Received REJECTION for post {post_id} on topic '{topic}'")
     try:
         update_post_status(post_id, "rejected")
-        mark_topic_as_processed(topic) # <-- NEW: Update the topic status
-        return create_html_response(f"Post for topic '{topic}' has been REJECTED.", "#6c757d")
+        mark_topic_as_processed(topic)  # <-- NEW: Update the topic status
+        return create_html_response(
+            f"Post for topic '{topic}' has been REJECTED.", "#6c757d"
+        )
     except Exception as e:
-        return HTMLResponse(content=create_html_response("An internal server error occurred.", "#dc3545"), status_code=500)
+        return HTMLResponse(
+            content=create_html_response(
+                "An internal server error occurred.", "#dc3545"
+            ),
+            status_code=500,
+        )
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

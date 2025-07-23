@@ -4,7 +4,8 @@ import os
 import subprocess
 import time
 
-NGROK_AUTH_TOKEN = "2ztUSHj7MQ5CrCwQALsE7uHVrQv_6KE2ZX9wvdNCPWrdjpb7b" 
+NGROK_AUTH_TOKEN = "2ztUSHj7MQ5CrCwQALsE7uHVrQv_6KE2ZX9wvdNCPWrdjpb7b"
+
 
 def start_ngrok_and_server():
     """
@@ -25,9 +26,12 @@ def start_ngrok_and_server():
     except Exception as e:
         print(f"[ERROR] Could not start ngrok tunnel: {e}")
         return
-        
+
     print("[INFO] Starting FastAPI approval server on port 8000...")
-    subprocess.run(["uvicorn", "approval_server:app", "--host", "0.0.0.0", "--port", "8000"])
+    subprocess.run(
+        ["uvicorn", "approval_server:app", "--host", "0.0.0.0", "--port", "8000"]
+    )
+
 
 if __name__ == "__main__":
     try:

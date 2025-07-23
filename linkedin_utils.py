@@ -16,7 +16,7 @@ TOKEN_URL = "https://www.linkedin.com/oauth/v2/accessToken"
 
 
 def linkedin_authenticate():
-    
+
     if os.path.exists(TOKEN_FILE):
         with open(TOKEN_FILE, "r") as f:
             token = json.load(f)
@@ -25,13 +25,20 @@ def linkedin_authenticate():
 
     if token:
         print("Found saved token, creating session.")
-        sess = OAuth2Session(CLIENT_ID, token=token, auto_refresh_url=TOKEN_URL,
-                                         auto_refresh_kwargs={'client_id': CLIENT_ID, 'client_secret': CLIENT_SECRET},
-                                         token_updater=lambda t: save_token(t)) 
+        sess = OAuth2Session(
+            CLIENT_ID,
+            token=token,
+            auto_refresh_url=TOKEN_URL,
+            auto_refresh_kwargs={
+                "client_id": CLIENT_ID,
+                "client_secret": CLIENT_SECRET,
+            },
+            token_updater=lambda t: save_token(t),
+        )
         return sess
 
     print("No token file found, starting new login flow.")
-    
+
     sess = OAuth2Session(CLIENT_ID, redirect_uri=REDIRECT_URI, scope=SCOPES)
     auth_url = sess.authorization_url(AUTH_URL)
 
@@ -42,9 +49,7 @@ def linkedin_authenticate():
 
     try:
         new_token = sess.fetch_token(
-            TOKEN_URL,
-            client_secret=CLIENT_SECRET,
-            authorization_response=redirect_resp
+            TOKEN_URL, client_secret=CLIENT_SECRET, authorization_response=redirect_resp
         )
         # save it for next time
         with open(TOKEN_FILE, "w") as f:
@@ -54,6 +59,7 @@ def linkedin_authenticate():
     except Exception as e:
         print(f"Error fetching token: {e}")
         return None
+
 
 def save_token(token):
     with open(TOKEN_FILE, "w") as f:
